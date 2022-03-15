@@ -1,9 +1,9 @@
 #Delta_Target_Longitude and Delta_Target_Latitude
-float32 Delta_Target_Longitude
-float32 Delta_Target_Latitude
+float64 Delta_Target_Longitude
+float64 Delta_Target_Latitude
 
 #Delta_Version
-int32 Code_version
+int16 Code_version
 
 #Delta_Longitudinal
 float32 Long_Delta_Distance

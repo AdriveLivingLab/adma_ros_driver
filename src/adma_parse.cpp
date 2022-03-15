@@ -3,6 +3,8 @@
   * @brief This file contains required functions for parsing the ADMA string
   * @authors Lakshman Balasubramanian
   * @date 06/08/2020
+  * @maintainer Ludwig Kastner
+  * @date 15/03/2022
   * */
 
 #include "../include/adma_connect/adma_parse.h"
@@ -140,8 +142,8 @@ void getADMADynamicHeader(const std::string& local_data, adma_connect::Adma& mes
     memcpy(&message.ByteOffset , &ByteOffset, sizeof(message.ByteOffset));
     char SliceSize[] = {local_data[88],local_data[89],local_data[90],local_data[91]};
     memcpy(&message.SliceSize , &SliceSize, sizeof(message.SliceSize));
-    char SliceData[] = {local_data[92],local_data[93],local_data[94],local_data[95]};
-    memcpy(&message.SliceData , &SliceData, sizeof(message.SliceData));
+    //char SliceData[] = {local_data[92],local_data[93],local_data[94],local_data[95]};
+    //memcpy(&message.SliceData , &SliceData, sizeof(message.SliceData));
 }
 
 /// \file
@@ -1882,3 +1884,223 @@ bool getBit(unsigned char byte, int position) // position in range 0-7
     return (byte >> position) & 0x1;
 }
 
+/// \file
+/// \brief
+//  * @authors Ludwig Kastner
+//  * @date 15/03/2022
+
+void getParsedDeltaData(const std::string& local_data, adma_connect::Adma& message)
+{
+    getDeltaTargetLong(local_data,message);
+    getDeltaTargetLat(local_data,message);
+    getDeltaVersion(local_data,message);
+    getDeltaLong(local_data,message);
+    getDeltaLat(local_data,message);
+    getDeltaResultat(local_data,message);
+    getDeltaAngle(local_data,message);
+    getDeltaTimeForwardVel(local_data,message);
+    getDeltaForwardAccelLatVel(local_data,message);
+    getDeltaLatAccelPitchAngle(local_data,message);
+    getDeltaGPSMode(local_data,message);
+}
+
+/// \file
+/// \brief  getDeltaTargetLong function - Target Longitude Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaTargetLong(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Target Long Integer
+    char TargetLongInteger[] = {local_data[8],local_data[9],local_data[10],local_data[11]};
+    memcpy(&cTarget_Long_Integer, &TargetLongInteger, sizeof(TargetLongInteger));
+    double Target_Long_Integer = cTarget_Long_Integer * 0.001;
+
+     //! Target Long Decimal Places
+    char TargetLongDecimal[] = {local_data[12],local_data[13],local_data[14],local_data[15]};
+    memcpy(&cTarget_Long_Decimal, &TargetLongDecimal, sizeof(TargetLongDecimal));
+    double Target_Long_Decimal = cTarget_Long_Decimal * 0.001;
+    
+    //!Add both signals to get combined Delta Target Long
+    double DeltaTargetLong = Target_Long_Integer + Target_Long_Decimal;
+    memcpy(&message.Delta_Target_Longitude, &DeltaTargetLong, sizeof(message.Delta_Target_Longitude));
+
+}
+
+/// \file
+/// \brief  getDeltaTargetLat function - Target Latitude Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaTargetLat(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Target Lat Integer
+    char TargetLatInteger[] = {local_data[8],local_data[9],local_data[10],local_data[11]};
+    memcpy(&cTarget_Lat_Integer , &TargetLatInteger, sizeof(TargetLatInteger));
+    double Target_Lat_Integer = cTarget_Lat_Integer * 0.001;
+
+     //! Target Lat Decimal Places
+    char TargetLatDecimal[] = {local_data[12],local_data[13],local_data[14],local_data[15]};
+    memcpy(&cTarget_Lat_Decimal , &TargetLatDecimal, sizeof(TargetLatDecimal));
+    double Target_Lat_Decimal =cTarget_Lat_Decimal * 0.001;
+
+    //!Add both signals to get combined Delta Target Lat
+    double DeltaTargetLat = Target_Lat_Integer + Target_Lat_Decimal;
+    memcpy(&message.Delta_Target_Latitude , &DeltaTargetLat, sizeof(message.Delta_Target_Latitude));
+
+}
+
+/// \file
+/// \brief  getDeltaVerion function - Delta Version Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaVersion(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Delta Version Information
+    char CodeVersion[] = {local_data[26],local_data[27]};
+    memcpy(&message.Code_Version , &CodeVersion, sizeof(message.Code_Version));
+}
+
+/// \file
+/// \brief  getDeltaLong function - Longitudinal Delta Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaLong(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Long Delta Distance
+    char LongDeltaDistance[] = {local_data[28],local_data[29],local_data[30],local_data[31]};
+    memcpy(&message.Long_Delta_Distance , &LongDeltaDistance, sizeof(message.Long_Delta_Distance));
+
+    //! Long Delta Velocity
+    char LongDeltaVelocity[] = {local_data[32],local_data[33],local_data[34],local_data[35]};
+    memcpy(&message.Long_Delta_Velocity , &LongDeltaVelocity, sizeof(message.Long_Delta_Velocity));
+}
+
+/// \file
+/// \brief  getDeltaLat function - Latitudinal Delta Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaLat(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Lat Delta Distance
+    char LatDeltaDistance[] = {local_data[36],local_data[37],local_data[38],local_data[39]};
+    memcpy(&message.Lat_Delta_Distance , &LatDeltaDistance, sizeof(message.Lat_Delta_Distance));
+
+    //! Lat Delta Velocity
+    char LatDeltaVelocity[] = {local_data[40],local_data[41],local_data[42],local_data[43]};
+    memcpy(&message.Lat_Delta_Velocity , &LatDeltaVelocity, sizeof(message.Lat_Delta_Velocity));
+}
+
+/// \file
+/// \brief  getDeltaLat function - Resultant Delta Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaResultat(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Resultant Distance
+    char ResultantDistance[] = {local_data[44],local_data[45],local_data[46],local_data[47]};
+    memcpy(&message.Resultant_Distance , &ResultantDistance, sizeof(message.Resultant_Distance));
+
+    //! Resultant Velocity
+    char ResultantVelocity[] = {local_data[48],local_data[49],local_data[50],local_data[51]};
+    memcpy(&message.Resultant_Velocity , &ResultantVelocity, sizeof(message.Resultant_Velocity));
+}
+
+/// \file
+/// \brief  getDeltaLat function - Resultant Delta Information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaAngle(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Resultant Distance
+    char AngleOfOrientation[] = {local_data[52],local_data[53],local_data[54],local_data[55]};
+    memcpy(&message.Angle_of_Orientation , &AngleOfOrientation, sizeof(message.Angle_of_Orientation));
+}
+
+/// \file
+/// \brief  getDeltaTimeForwardVel function - Delta Time and Hunter&Target Forward Velocity information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaTimeForwardVel(const std::string& local_data, adma_connect::Adma& message)
+{
+    //! Delta Time
+    char DeltaTime[] = {local_data[60],local_data[61],local_data[62],local_data[63]};
+    memcpy(&message.Delta_Time , &DeltaTime, sizeof(message.Delta_Time));
+
+     //! Target Forward Velocity
+    char TargetForwardVelocity[] = {local_data[64],local_data[65]};
+    memcpy(&message.iTarget_Forward_Velocity , &TargetForwardVelocity, sizeof(message.iTarget_Forward_Velocity));
+    message.Target_Forward_Velocity = message.iTarget_Forward_Velocity * 0.005;
+
+     //! Hunter Forward Velocity
+    char HunterForwardVelocity[] = {local_data[66],local_data[67]};
+    memcpy(&message.iHunter_Forward_Velocity , &HunterForwardVelocity, sizeof(message.iHunter_Forward_Velocity));
+    message.Hunter_Forward_Velocity = message.iHunter_Forward_Velocity * 0.005;
+}
+
+/// \file
+/// \brief  getDeltaForwardAccelLatVel function - Hunter&Target Forward Acceleration and Lateral Velocity information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaForwardAccelLatVel(const std::string& local_data, adma_connect::Adma& message)
+{
+     //! Target Forward Acceleration
+    char TargetForwardAcceleration[] = {local_data[68],local_data[69]};
+    memcpy(&message.iTarget_Forward_Acceleration , &TargetForwardAcceleration, sizeof(message.iTarget_Forward_Acceleration));
+    message.Target_Forward_Acceleration = message.iTarget_Forward_Acceleration * 0.005;
+
+     //! Hunter Forward Acceleration
+    char HunterForwardAcceleration[] = {local_data[70],local_data[71]};
+    memcpy(&message.iHunter_Forward_Acceleration , &HunterForwardAcceleration, sizeof(message.iHunter_Forward_Acceleration));
+    message.Hunter_Forward_Acceleration = message.iHunter_Forward_Acceleration * 0.005;
+
+     //! Target Lateral Velocity
+    char TargetLateralVelocity[] = {local_data[72],local_data[73]};
+    memcpy(&message.iTarget_Lateral_Velocity , &TargetLateralVelocity, sizeof(message.iTarget_Lateral_Velocity));
+    message.Target_Lateral_Velocity = message.iTarget_Lateral_Velocity * 0.005;
+
+     //! Hunter Lateral Velocity
+    char HunterLateralVelocity[] = {local_data[74],local_data[75]};
+    memcpy(&message.iHunter_Lateral_Velocity , &HunterLateralVelocity, sizeof(message.iHunter_Lateral_Velocity));
+    message.Hunter_Lateral_Velocity = message.iHunter_Lateral_Velocity * 0.005;
+}
+
+/// \file
+/// \brief  getDeltaLatAccelPitchAngle function - Hunter&Target Lateral Acceleration and Pitch Angle information
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaLatAccelPitchAngle(const std::string& local_data, adma_connect::Adma& message)
+{
+     //! Target Lateral Acceleration
+    char TargetLateralAcceleration[] = {local_data[76],local_data[77]};
+    memcpy(&message.iTarget_Lateral_Acceleration , &TargetLateralAcceleration, sizeof(message.iTarget_Lateral_Acceleration));
+    message.Target_Lateral_Acceleration = message.iTarget_Lateral_Acceleration * 0.005;
+
+     //! Hunter Lateral Acceleration
+    char HunterLateralAcceleration[] = {local_data[78],local_data[79]};
+    memcpy(&message.iHunter_Lateral_Acceleration , &HunterLateralAcceleration, sizeof(message.iHunter_Lateral_Acceleration));
+    message.Hunter_Lateral_Acceleration = message.iHunter_Lateral_Acceleration * 0.005;
+
+     //! Target Lateral Velocity
+    char TargetPitchAngle[] = {local_data[80],local_data[81]};
+    memcpy(&message.iTarget_Pitch_Angle , &TargetPitchAngle, sizeof(message.iTarget_Pitch_Angle));
+    message.Target_Pitch_Angle = message.iTarget_Pitch_Angle * 0.02;
+
+     //! Hunter Lateral Velocity
+    char HunterPitchAngle[] = {local_data[80],local_data[81]};
+    memcpy(&message.iHunter_Pitch_Angle , &HunterPitchAngle, sizeof(message.iHunter_Pitch_Angle));
+    message.Hunter_Pitch_Angle = message.iHunter_Pitch_Angle * 0.02;
+}
+
+/// \file
+/// \brief  getDeltaGPSMode function - Hunter&Target GPS mode
+/// \param  local_data ADMA string
+/// \param  message ADMA Message to be loaded
+void getDeltaGPSMode(const std::string& local_data, adma_connect::Adma& message)
+{
+     //! Target GPS Mode
+    char TargetGPSMode[] = {local_data[84],local_data[85]};
+    memcpy(&message.Target_GPS_Mode , &TargetGPSMode, sizeof(message.Target_GPS_Mode));
+
+     //! Hunter GPS Mode
+    char HunterGPSMode[] = {local_data[86],local_data[87]};
+    memcpy(&message.Hunter_GPS_Mode , &HunterGPSMode, sizeof(message.Hunter_GPS_Mode));
+}
