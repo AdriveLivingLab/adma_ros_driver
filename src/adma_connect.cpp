@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <adma_connect/Adma.h>
+#include <adma_connect/Adma_delta.h>
 #include <adma_connect/adma_parse.h>
 
 /** \namespace BOOST UDP link*/
@@ -37,8 +38,10 @@ int main(int argc, char **argv)
   ros::NodeHandle nh("~");
   /* Port number to which ADMA broadcasts */
   /** \get port number list from launch file */
+  /*** Message type, "normal" or "delta" */
   std::string port_num_ADMA;
   std::string ip_adress_ADMA;
+  std::string message_type;
   if(!nh.getParam("port_num_ADMA", port_num_ADMA))
   {
      ROS_INFO("Missing Portnumber (see ADMA_pub_Ethernet.launch file!)");
@@ -47,6 +50,10 @@ int main(int argc, char **argv)
   {
      ROS_INFO("Missing IP Adress (see ADMA_pub_Ethernet.launch file!)");
   }
+  if (!nh.getParam("message_type", message_type))
+  {
+      ROS_INFO("Missing Message Type (see ADMA_pub_Ethernet.launch file!)");
+  }
 
   /** \brief Port Number to which ADMA broadcasts */
   const unsigned short port = static_cast<unsigned short>(std::strtoul(port_num_ADMA.c_str(), NULL, 0));
@@ -54,7 +61,15 @@ int main(int argc, char **argv)
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
   /* Initiliaze publisher */
-  ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma>("adma_data",1);
+  if (strncmp(message_type, "delta", 6) == 0)
+  {
+      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma_delta>("adma_delta_data", 1);
+  }
+  
+  else
+  {
+      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_data", 1);
+  }
 
   /* Initilaize loop rate */
   ros::Rate loop_rate(loopSpeed);
@@ -64,37 +79,70 @@ int main(int argc, char **argv)
   udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
   std::cout << "Local bind " << local_endpoint << std::endl;
   /* Endless loop until ROS is ok*/
-  while (ros::ok())
+  
+  if (strncmp(message_type, "delta", 6) == 0)
   {
-    /* Socket handling */
-    udp::socket socket(io_service);
-    socket.open(udp::v4());
-    socket.bind(local_endpoint);
-    /* The length of the stream from ADMA is 856 bytes */
-    boost::array<char, 856> recv_buf;
-    udp::endpoint sender_endpoint;
-    len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);    
-    /* Prepare for parsing */
-    std::string local_data(recv_buf.begin(), recv_buf.end());
-    /* Load the messages on the publisers */
-    adma_connect::Adma message;
-    getParsedData(local_data,message);
-    /* publish the ADMA message */
-    publisher_.publish(message);
-    double grab_time = ros::Time::now().toSec();
+      while (ros::ok())
+      {
+          /* Socket handling */
+          udp::socket socket(io_service);
+          socket.open(udp::v4());
+          socket.bind(local_endpoint);
+          /* The length of the stream from ADMA is 856 bytes */
+          boost::array<char, 92> recv_buf;
+          udp::endpoint sender_endpoint;
+          len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
+          /* Prepare for parsing */
+          std::string local_data(recv_buf.begin(), recv_buf.end());
+          /* Load the messages on the publisers */
+          adma_connect::Adma_delta message;
+          getParsedData(local_data, message);
+          /* publish the ADMA message */
+          publisher_.publish(message);
+          double grab_time = ros::Time::now().toSec();
 
-    if (performance_check)
-    {
-    char INS_Time_msec[] = {local_data[584],local_data[585],local_data[586],local_data[587]};
-    memcpy(&message.INSTimemsec , &INS_Time_msec, sizeof(message.INSTimemsec));
-    float weektime = message.INSTimeWeek;
-    ROS_INFO("%f ", ((grab_time*1000)-(message.INSTimemsec+1592697600000)));
-    }
-    message.TimeMsec = ros::Time::now().toSec()*1000;
-    message.TimeNsec = ros::Time::now().toNSec();
-    /* Loop rate maintain*/
-    ros::spinOnce();
-    loop_rate.sleep();
+          message.TimeMsec = ros::Time::now().toSec() * 1000;
+          message.TimeNsec = ros::Time::now().toNSec();
+          /* Loop rate maintain*/
+          ros::spinOnce();
+          loop_rate.sleep();
+      }
+  }
+
+  else
+  {
+      while (ros::ok())
+      {
+          /* Socket handling */
+          udp::socket socket(io_service);
+          socket.open(udp::v4());
+          socket.bind(local_endpoint);
+          /* The length of the stream from ADMA is 856 bytes */
+          boost::array<char, 856> recv_buf;
+          udp::endpoint sender_endpoint;
+          len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
+          /* Prepare for parsing */
+          std::string local_data(recv_buf.begin(), recv_buf.end());
+          /* Load the messages on the publisers */
+          adma_connect::Adma message;
+          getParsedData(local_data, message);
+          /* publish the ADMA message */
+          publisher_.publish(message);
+          double grab_time = ros::Time::now().toSec();
+
+          if (performance_check)
+          {
+              char INS_Time_msec[] = { local_data[584],local_data[585],local_data[586],local_data[587] };
+              memcpy(&message.INSTimemsec, &INS_Time_msec, sizeof(message.INSTimemsec));
+              float weektime = message.INSTimeWeek;
+              ROS_INFO("%f ", ((grab_time * 1000) - (message.INSTimemsec + 1592697600000)));
+          }
+          message.TimeMsec = ros::Time::now().toSec() * 1000;
+          message.TimeNsec = ros::Time::now().toNSec();
+          /* Loop rate maintain*/
+          ros::spinOnce();
+          loop_rate.sleep();
+      }
   }
   return 0;
 }
