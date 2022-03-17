@@ -8,6 +8,7 @@
 
 #pragma once
 #include <adma_connect/Adma.h>
+#include <adma_connect/Adma_delta.h>
 #include <bitset>
 
 #ifndef ADMA_P
@@ -107,16 +108,17 @@ bool getBit(unsigned char byte, int position);
 /**
   * Changes by Ludwig Kastner on 2022/03/15: Added Delta Messages  
   */
-void getDeltaTargetLong(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaTargetLat(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaVersion(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaLong(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaLat(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaResultat(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaAngle(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaTimeForwardVel(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaForwardAccelLatVel(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaLatAccelPitchAngle(const std::string& local_data, adma_connect::Adma& message);
-void getDeltaGPSMode(const std::string& local_data, adma_connect::Adma& message);
+void getParsedDeltaData(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTargetLong(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTargetLat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaVersion(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLong(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaResultat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaAngle(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTimeForwardVel(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaForwardAccelLatVel(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLatAccelPitchAngle(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaGPSMode(const std::string& local_data, adma_connect::Adma_delta& message);
 
 #endif
