@@ -61,56 +61,55 @@ int main(int argc, char **argv)
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
   /* Initiliaze publisher */
-  if (strncmp(message_type, "delta", 6) == 0)
+  if (message_type == "delta")
   {
+      /* Initilaize loop rate */
+      ros::Rate loop_rate(loopSpeed);
+      /* Create an IO Service wit the OS given the IP and the port */
+      boost::asio::io_service io_service;
+      /* Establish UDP connection*/
+      udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
+      std::cout << "Local bind " << local_endpoint << std::endl;
+      /* Endless loop until ROS is ok*/
       ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma_delta>("adma_delta_data", 1);
-  }
-  
-  else
-  {
-      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_data", 1);
-  }
-
-  /* Initilaize loop rate */
-  ros::Rate loop_rate(loopSpeed);
-  /* Create an IO Service wit the OS given the IP and the port */
-  boost::asio::io_service io_service;
-  /* Establish UDP connection*/
-  udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
-  std::cout << "Local bind " << local_endpoint << std::endl;
-  /* Endless loop until ROS is ok*/
-  
-  if (strncmp(message_type, "delta", 6) == 0)
-  {
       while (ros::ok())
       {
           /* Socket handling */
           udp::socket socket(io_service);
           socket.open(udp::v4());
           socket.bind(local_endpoint);
-          /* The length of the stream from ADMA is 856 bytes */
+          /* The length of the stream from ADMA Delta Data is 92 bytes without the UDP-Header*/
           boost::array<char, 92> recv_buf;
           udp::endpoint sender_endpoint;
           len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);
           /* Prepare for parsing */
           std::string local_data(recv_buf.begin(), recv_buf.end());
           /* Load the messages on the publisers */
-          adma_connect::Adma_delta message;
-          getParsedData(local_data, message);
+          adma_connect::Adma_delta delta_message;
+          getParsedDeltaData(local_data, delta_message);
           /* publish the ADMA message */
-          publisher_.publish(message);
+          publisher_.publish(delta_message);
           double grab_time = ros::Time::now().toSec();
 
-          message.TimeMsec = ros::Time::now().toSec() * 1000;
-          message.TimeNsec = ros::Time::now().toNSec();
+          delta_message.TimeMsec = ros::Time::now().toSec() * 1000;
+          delta_message.TimeNsec = ros::Time::now().toNSec();
           /* Loop rate maintain*/
           ros::spinOnce();
           loop_rate.sleep();
       }
   }
-
   else
   {
+      /* Initilaize loop rate */
+      ros::Rate loop_rate(loopSpeed);
+      /* Create an IO Service wit the OS given the IP and the port */
+      boost::asio::io_service io_service;
+      /* Establish UDP connection*/
+      udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
+      std::cout << "Local bind " << local_endpoint << std::endl;
+      /* Endless loop until ROS is ok*/
+      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_data", 1);
+
       while (ros::ok())
       {
           /* Socket handling */
