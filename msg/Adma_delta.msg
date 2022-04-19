@@ -43,4 +43,5 @@ int16 Hunter_GPS_Mode
 
 # MobileEye Time Comparison
 int32 Timesec
-int32 TimeNsec
+float32 TimeMsec
+float32 TimeNsec
