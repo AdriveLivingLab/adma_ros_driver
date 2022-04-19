@@ -285,7 +285,7 @@ void getStatusCount(const std::string& local_data, adma_connect::Adma& message)
 {
     //! Status Count
     char Status_Count[] = {local_data[99]};
-    message.StatusCount = int(local_data[99]);
+    memcpy(&message.StatusCount, &Status_Count, sizeof(message.StatusCount));
     unsigned char statusKF;
     char Status_KF[] = {local_data[100]};
     memcpy(&statusKF, &Status_KF, sizeof(statusKF));
@@ -1241,7 +1241,7 @@ void getGPSAuxData2(const std::string& local_data, adma_connect::Adma& message)
     char GPS_Receiver_Load[] = {local_data[497]};
     memcpy(&message.GPSReceiverLoad , &GPS_Receiver_Load, sizeof(message.GPSReceiverLoad));
     message.fGPSReceiverLoad = message.GPSReceiverLoad * 0.5;  
-    char GPS_BaseNr[] = {local_data[498]};
+    char GPS_BaseNr[] = {local_data[498],local_data[499],local_data[500],local_data[501]};
     memcpy(&message.GPSBaseNr , &GPS_BaseNr, sizeof(message.GPSBaseNr));  
 }
 /// \file
@@ -1808,18 +1808,23 @@ void getINSEVEandETE(const std::string& local_data, adma_connect::Adma& message)
     char INS_Stddev_Vel_X[] = {local_data[824]};
     memcpy(&message.INSStddevVelX , &INS_Stddev_Vel_X, sizeof(message.INSStddevVelX));
     message.fINSStddevVelX = message.INSStddevVelX * 0.01;  
+    
     char INS_Stddev_Vel_Y[] = {local_data[825]};
     memcpy(&message.INSStddevVelY , &INS_Stddev_Vel_Y, sizeof(message.INSStddevVelY));
     message.fINSStddevVelY = message.INSStddevVelY * 0.01;
+    
     char INS_Stddev_Vel_Z[] = {local_data[826]};
     memcpy(&message.INSStddevVelZ , &INS_Stddev_Vel_Z, sizeof(message.INSStddevVelZ));
     message.fINSStddevVelZ = message.INSStddevVelZ * 0.01;
+    
     char INS_Stddev_Roll[] = {local_data[827]};
     memcpy(&message.INSStddevRoll , &INS_Stddev_Roll, sizeof(message.INSStddevRoll));
     message.fINSStddevRoll = message.INSStddevRoll * 0.01;
+    
     char INS_Stddev_Pitch[] = {local_data[828]};
     memcpy(&message.INSStddevPitch , &INS_Stddev_Pitch, sizeof(message.INSStddevPitch));
     message.fINSStddevPitch = message.INSStddevPitch * 0.01;
+    
     char INS_Stddev_Yaw[] = {local_data[829]};
     memcpy(&message.INSStddevYaw , &INS_Stddev_Yaw, sizeof(message.INSStddevYaw));
     message.fINSStddevYaw = message.INSStddevYaw * 0.01;
