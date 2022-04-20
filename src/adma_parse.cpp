@@ -287,7 +287,7 @@ void getStatusCount(const std::string& local_data, adma_connect::Adma& message)
 {
     //! Status Count
     char Status_Count[] = {local_data[99]};
-    memcpy(&message.StatusCount, &Status_Count, sizeof(message.StatusCount));
+    message.StatusCount = std::stoi(Status_Count, nullptr, 2);
     unsigned char statusKF;
     char Status_KF[] = {local_data[100]};
     memcpy(&statusKF, &Status_KF, sizeof(statusKF));
