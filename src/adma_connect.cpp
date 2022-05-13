@@ -71,6 +71,7 @@ int main(int argc, char **argv)
       udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
       std::cout << "Local bind " << local_endpoint << std::endl;
       std::cout << "Delta Mode activated" << std::endl;
+      unsigned int seq = 0; /* added standard ros header by Tobias Wagner */
       /* Endless loop until ROS is ok*/
       ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma_delta>("adma_delta_data", 1);
       while (ros::ok())
@@ -89,6 +90,8 @@ int main(int argc, char **argv)
           adma_connect::Adma_delta delta_message;
           getParsedDeltaData(local_data, delta_message);
           /* publish the ADMA message */
+          message.header.stamp = ros::Time::now();
+          message.header.seq = seq++;
           publisher_.publish(delta_message);
           double grab_time = ros::Time::now().toSec();
 
@@ -109,6 +112,7 @@ int main(int argc, char **argv)
       udp::endpoint local_endpoint = boost::asio::ip::udp::endpoint(address, port);
       std::cout << "Local bind " << local_endpoint << std::endl;
       std::cout << "Normal Mode activated" << std::endl;
+      unsigned int seq = 0; /* added standard ros header by Tobias Wagner */
       /* Endless loop until ROS is ok*/
       ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_data", 1);
 
@@ -128,6 +132,8 @@ int main(int argc, char **argv)
           adma_connect::Adma message;
           getParsedData(local_data, message);
           /* publish the ADMA message */
+          message.header.stamp = ros::Time::now();
+          message.header.seq = seq++;
           publisher_.publish(message);
           double grab_time = ros::Time::now().toSec();
 
