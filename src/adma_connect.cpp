@@ -90,8 +90,8 @@ int main(int argc, char **argv)
           adma_connect::Adma_delta delta_message;
           getParsedDeltaData(local_data, delta_message);
           /* publish the ADMA message */
-          message.header.stamp = ros::Time::now();
-          message.header.seq = seq++;
+          delta_message.header.stamp = ros::Time::now();
+          delta_message.header.seq = seq++;
           publisher_.publish(delta_message);
           double grab_time = ros::Time::now().toSec();
 
