@@ -92,12 +92,13 @@ int main(int argc, char **argv)
           /* publish the ADMA message */
           delta_message.header.stamp = ros::Time::now();
           delta_message.header.seq = seq++;
-          publisher_.publish(delta_message);
+
           double grab_time = ros::Time::now().toSec();
 
           delta_message.TimeMsec = ros::Time::now().toSec() * 1000;
           delta_message.TimeNsec = ros::Time::now().toNSec();
           /* Loop rate maintain*/
+          publisher_.publish(delta_message);
           ros::spinOnce();
           loop_rate.sleep();
       }
@@ -134,8 +135,8 @@ int main(int argc, char **argv)
           /* publish the ADMA message */
           message.header.stamp = ros::Time::now();
           message.header.seq = seq++;
-          publisher_.publish(message);
           double grab_time = ros::Time::now().toSec();
+          
 
           if (performance_check)
           {
@@ -146,6 +147,8 @@ int main(int argc, char **argv)
           }
           message.TimeMsec = ros::Time::now().toSec() * 1000;
           message.TimeNsec = ros::Time::now().toNSec();
+          
+          publisher_.publish(message);
           /* Loop rate maintain*/
           ros::spinOnce();
           loop_rate.sleep();
