@@ -59,22 +59,19 @@ int main(int argc, char **argv)
   /** \brief IP address to which ADMA broadcasts */
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
+  ros::Publisher publisher_;
 
   if (message_type == "delta")
   {
       /* Initiliaze publisher */
-      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_delta_data", 1);
+      publisher_ = nh.advertise<adma_connect::Adma>("adma_delta_data", 1);
       std::cout << "Listening for delta add-on messages" << std::endl;
-      /* The length of the stream from delta add-on is 92 bytes */
-      unsigned int recv_buffer_size = 92;
   }
   else
   {
       /* Initiliaze publisher */
-      ros::Publisher  publisher_ = nh.advertise<adma_connect::Adma>("adma_data", 1);
+      publisher_ = nh.advertise<adma_connect::Adma_delta>("adma_data", 1);
       std::cout << "Listening for ADMA messages" << std::endl;
-      /* The length of the stream from ADMA is 856 bytes */
-      unsigned int recv_buffer_size = 856;
   }
 
   /* Initilaize loop rate */
@@ -92,21 +89,22 @@ int main(int argc, char **argv)
     udp::socket socket(io_service);
     socket.open(udp::v4());
     socket.bind(local_endpoint);
+    /* Load the messages on the publisers */
+    adma_connect::Adma message;
+    boost::array<char, 856> recv_buf;
+    
+    if (message_type == "delta") /*If delta mode is enabled, overwrite these values */
+    {
+        adma_connect::Adma_delta message;
+        boost::array<char, 92> recv_buf;
+    }
     /* The length of the stream from ADMA is 856 bytes */
-    boost::array<char, recv_buffer_size> recv_buf;
+    /*boost::array<char, recv_buffer_size> recv_buf;*/
     udp::endpoint sender_endpoint;
     len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);    
     /* Prepare for parsing */
     std::string local_data(recv_buf.begin(), recv_buf.end());
-    /* Load the messages on the publisers */
-    if (message_type == "delta")
-    {
-        adma_connect::Adma_delta message;
-    }
-    else
-    {
-        adma_connect::Adma message;
-    }
+
     getParsedData(local_data,message);
     
     /* publish the ADMA message */
