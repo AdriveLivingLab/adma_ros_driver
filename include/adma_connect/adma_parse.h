@@ -3,10 +3,12 @@
   * @brief This file contains required functions for parsing the ADMA string
   * @authors Lakshman Balasubramanian
   * @date 06/08/2020
-  * */
+  * Changes by Ludwig Kastner on 2022/03/15: Added Delta Messages  
+  */
 
 #pragma once
 #include <adma_connect/Adma.h>
+#include <adma_connect/Adma_delta.h>
 #include <bitset>
 
 #ifndef ADMA_P
@@ -102,5 +104,21 @@ void getAnalog(const std::string& local_data, adma_connect::Adma& message);
 void getKalmanFilter(const std::string& local_data, adma_connect::Adma& message);
 void getGNSSReceiver(const std::string& local_data, adma_connect::Adma& message);
 bool getBit(unsigned char byte, int position);
+
+/**
+  * Changes by Ludwig Kastner on 2022/03/15: Added Delta Messages  
+  */
+void getParsedDeltaData(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTargetLong(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTargetLat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaVersion(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLong(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaResultat(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaAngle(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaTimeForwardVel(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaForwardAccelLatVel(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaLatAccelPitchAngle(const std::string& local_data, adma_connect::Adma_delta& message);
+void getDeltaGPSMode(const std::string& local_data, adma_connect::Adma_delta& message);
 
 #endif

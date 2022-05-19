@@ -88,7 +88,6 @@ add_library(${PROJECT_NAME}_core
 
 add_executable(${PROJECT_NAME} 
   src/adma_connect.cpp
-  src/adma_can_connect
 )
 
 
