@@ -90,13 +90,6 @@ int main(int argc, char **argv)
     /* Get current time */
     double grab_time = ros::Time::now().toSec();
 
-    if (performance_check)
-    {
-    char INS_Time_msec[] = {local_data[584],local_data[585],local_data[586],local_data[587]};
-    memcpy(&message.INSTimemsec , &INS_Time_msec, sizeof(message.INSTimemsec));
-    float weektime = message.INSTimeWeek;
-    ROS_INFO("%f ", ((grab_time*1000)-(message.INSTimemsec+1592697600000)));
-    }
     message.TimeMsec = ros::Time::now().toSec()*1000;
     message.TimeNsec = ros::Time::now().toNSec();
     
