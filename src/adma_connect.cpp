@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
   /* Initiliaze publisher */
-  ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma>("adma_data",1);
+  ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma_delta>("adma_data",1);
 
   /* Initilaize loop rate */
   ros::Rate loop_rate(loopSpeed);
