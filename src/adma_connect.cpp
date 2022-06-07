@@ -40,7 +40,6 @@ int main(int argc, char **argv)
   /** \get port number list from launch file */
   std::string port_num_ADMA;
   std::string ip_adress_ADMA;
-  std::string message_type;
   if(!nh.getParam("port_num_ADMA", port_num_ADMA))
   {
      ROS_INFO("Missing Portnumber (see ADMA_pub_Ethernet.launch file!)");
@@ -49,30 +48,14 @@ int main(int argc, char **argv)
   {
      ROS_INFO("Missing IP Adress (see ADMA_pub_Ethernet.launch file!)");
   }
-  if (!nh.getParam("message_type", message_type))
-  {
-      ROS_INFO("Missing Message Type (see ADMA_pub_Ethernet.launch file!)");
-  }
 
   /** \brief Port Number to which ADMA broadcasts */
   const unsigned short port = static_cast<unsigned short>(std::strtoul(port_num_ADMA.c_str(), NULL, 0));
   /** \brief IP address to which ADMA broadcasts */
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
-  ros::Publisher publisher_;
-
-  if (message_type == "delta")
-  {
-      /* Initiliaze publisher */
-      publisher_ = nh.advertise<adma_connect::Adma>("adma_delta_data", 1);
-      std::cout << "Listening for delta add-on messages" << std::endl;
-  }
-  else
-  {
-      /* Initiliaze publisher */
-      publisher_ = nh.advertise<adma_connect::Adma_delta>("adma_data", 1);
-      std::cout << "Listening for ADMA messages" << std::endl;
-  }
+  /* Initiliaze publisher */
+  ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma>("adma_data",1);
 
   /* Initilaize loop rate */
   ros::Rate loop_rate(loopSpeed);
@@ -89,23 +72,15 @@ int main(int argc, char **argv)
     udp::socket socket(io_service);
     socket.open(udp::v4());
     socket.bind(local_endpoint);
-    /* Load the messages on the publisers */
-    adma_connect::Adma message;
-    boost::array<char, 856> recv_buf;
-    
-    if (message_type == "delta") /*If delta mode is enabled, overwrite these values */
-    {
-        adma_connect::Adma_delta message;
-        boost::array<char, 92> recv_buf;
-    }
     /* The length of the stream from ADMA is 856 bytes */
-    /*boost::array<char, recv_buffer_size> recv_buf;*/
+    boost::array<char, 92> recv_buf;
     udp::endpoint sender_endpoint;
     len = socket.receive_from(boost::asio::buffer(recv_buf), sender_endpoint);    
     /* Prepare for parsing */
     std::string local_data(recv_buf.begin(), recv_buf.end());
-
-    getParsedData(local_data,message);
+    /* Load the messages on the publisers */
+    adma_connect::Adma_delta message;
+    getParsedDeltaData(local_data,message);
     
     /* publish the ADMA message */
     // fill timestamp and increment seq counter
