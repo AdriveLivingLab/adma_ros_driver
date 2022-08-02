@@ -15,6 +15,12 @@
 #include <adma_connect/Adma.h>
 #include <adma_connect/adma_parse.h>
 #include "std_msgs/String.h"
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Temperature.h>
+
+// Tf
+#include <tf/LinearMath/Quaternion.h>
+#include <tf/transform_datatypes.h>
 
 /** \namespace BOOST UDP link*/
 using boost::asio::ip::udp;
@@ -23,6 +29,7 @@ using boost::asio::ip::udp;
 size_t len = 0;
 /** \brief Check the timings */
 bool performance_check = 0;
+
 /** \brief speed of accessing the data */
 #define loopSpeed 100
 /// \file
@@ -31,11 +38,22 @@ bool performance_check = 0;
 /// \param  argv An argument vector of the command line arguments
 /// \param  loop_rate Set the frequency of publising in Hz
 /// \return an integer 0 upon exit success
+
+static inline double getZoneMeridian(const std::string& utm_zone)
+{
+  int zone_number = std::atoi(utm_zone.substr(0,2).c_str());
+  return (zone_number == 0) ? 0.0 : (zone_number - 1) * 6.0 - 177.0;
+}
+static inline double SQUARE(double x) { return x * x; }
+
+
 int main(int argc, char **argv)
 {
   /* Initialize node */
   ros::init(argc, argv, "adma_connect_pkg");
   ros::NodeHandle nh("~");
+  /* Initialize IMU node */
+  //ros::NodeHandle nh_imu("imu");
   /* Port number to which ADMA broadcasts */
   /** \get port number list from launch file */
   std::string port_num_ADMA;
@@ -57,6 +75,11 @@ int main(int argc, char **argv)
   /* Initiliaze publisher */
   ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma>("adma_data",1);
   ros::Publisher  raw_publisher_  = nh.advertise<std_msgs::String>("raw_adma_data",1);
+  
+
+  /* +++++++++++++++ Aigis +++++++++++++++++++++ */
+  ros::Publisher pub_imu = nh.advertise<sensor_msgs::Imu>("imu/data", 1);
+  /* +++++++++++++++ Aigis +++++++++++++++++++++ */
 
   /* Initilaize loop rate */
   ros::Rate loop_rate(loopSpeed);
@@ -69,6 +92,7 @@ int main(int argc, char **argv)
   /* Endless loop until ROS is ok*/
   while (ros::ok())
   {
+    seq++;
     /* Socket handling */
     udp::socket socket(io_service);
     socket.open(udp::v4());
@@ -84,11 +108,10 @@ int main(int argc, char **argv)
     msg_raw_adma.data = local_data;
     adma_connect::Adma message;
     getParsedData(local_data,message);
-    
     /* publish the ADMA message */
     // fill timestamp and increment seq counter
     message.header.stamp = ros::Time::now();
-    message.header.seq = seq++;
+    message.header.seq = seq;
 
     /* Get current time */
     double grab_time = ros::Time::now().toSec();
@@ -105,7 +128,40 @@ int main(int argc, char **argv)
     
     /* publish ADMA message */
     publisher_.publish(message);
-    raw_publisher_.publish(msg_raw_adma);
+    raw_publisher_.publish(msg_raw_adma);    
+    
+    
+    /* +++++++++++++++ Aigis +++++++++++++++++++++ */
+    // publish imu message with DIN 70000 settings
+          
+    // IMU
+    static double orientation_stddev[3];
+    ros::Publisher pub_imu = nh.advertise<sensor_msgs::Imu>("imu/data", 1);
+    tf::Quaternion q;
+    q.setRPY((double)message.fINSRoll, (double)message.fINSPitch * 1e-6, enu_heading);
+    sensor_msgs::Imu msg_imu;
+    msg_imu.header.stamp = stamp;
+    msg_imu.header.frame_id = frame_id_gps;
+    msg_imu.header.seq = seq;
+    msg_imu.linear_acceleration.x = message.fAccHorX_1 * 9.81;
+    msg_imu.linear_acceleration.y = message.fAccHorX_1 * 9.81;
+    msg_imu.linear_acceleration.z = message.fAccHorX_1 * 9.81;
+    msg_imu.angular_velocity.x = message.fRateHorX * M_PI / 180;
+    msg_imu.angular_velocity.y = message.fRateHorY * M_PI / 180;
+    msg_imu.angular_velocity.z = message.fRateHorZ * M_PI / 180;
+    msg_imu.orientation.w = q.w();
+    msg_imu.orientation.x = q.x();
+    msg_imu.orientation.y = q.y();
+    msg_imu.orientation.z = q.z();
+    orientation_stddev[0] = (double)message.fINSStddevRoll;
+    orientation_stddev[1] = (double)message.fINSStddevPitch;
+    orientation_stddev[2] = (double)message.fINSStddevYaw;
+    msg_imu.orientation_covariance[0] = SQUARE(orientation_stddev[0]); // x
+    msg_imu.orientation_covariance[4] = SQUARE(orientation_stddev[1]); // y
+    msg_imu.orientation_covariance[8] = SQUARE(orientation_stddev[2]); // z
+    pub_imu.publish(msg_imu);
+    
+    }
     /* Loop rate maintain*/
     ros::spinOnce();
     loop_rate.sleep();
