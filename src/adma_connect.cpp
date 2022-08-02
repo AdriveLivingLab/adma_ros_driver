@@ -12,8 +12,8 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <fstream>
-#include <adma_connect/Adma.h>
-#include <adma_connect/adma_parse.h>
+#include <adma_connect_imu/Adma.h>
+#include <adma_connect_imu/adma_parse.h>
 #include "std_msgs/String.h"
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/Temperature.h>

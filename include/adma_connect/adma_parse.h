@@ -6,7 +6,7 @@
   * */
 
 #pragma once
-#include <adma_connect/Adma.h>
+#include <adma_connect_imu/Adma.h>
 #include <bitset>
 
 #ifndef ADMA_P
