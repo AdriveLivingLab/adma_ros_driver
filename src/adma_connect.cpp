@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   const boost::asio::ip::address address = boost::asio::ip::address::from_string(ip_adress_ADMA);
 
   /* Initiliaze publisher */
-  ros::Publisher  publisher_  = nh.advertise<adma_connect::Adma>("adma_data",1);
+  ros::Publisher  publisher_  = nh.advertise<adma_connect_imu::Adma>("adma_data",1);
   ros::Publisher  raw_publisher_  = nh.advertise<std_msgs::String>("raw_adma_data",1);
   
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     /* Load the messages on the publisers */
     std_msgs::String msg_raw_adma;
     msg_raw_adma.data = local_data;
-    adma_connect::Adma message;
+    adma_connect_imu::Adma message;
     getParsedData(local_data,message);
     /* publish the ADMA message */
     // fill timestamp and increment seq counter
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
     static double orientation_stddev[3];
     ros::Publisher pub_imu = nh.advertise<sensor_msgs::Imu>("imu/data", 1);
     tf::Quaternion q;
-    q.setRPY((double)message.fINSRoll, (double)message.fINSPitch * 1e-6, enu_heading);
+    q.setRPY((double)message.fINSRoll, (double)message.fINSPitch, (double)message.fINSYaw);
     sensor_msgs::Imu msg_imu;
     msg_imu.header.stamp = stamp;
     msg_imu.header.frame_id = frame_id_gps;
