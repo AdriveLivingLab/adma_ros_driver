@@ -140,8 +140,8 @@ int main(int argc, char **argv)
     tf::Quaternion q;
     q.setRPY((double)message.fINSRoll, (double)message.fINSPitch, (double)message.fINSYaw);
     sensor_msgs::Imu msg_imu;
-    msg_imu.header.stamp = stamp;
-    msg_imu.header.frame_id = frame_id_gps;
+    msg_imu.header.stamp = ros::Time::now();
+    msg_imu.header.frame_id = "base_link";
     msg_imu.header.seq = seq;
     msg_imu.linear_acceleration.x = message.fAccHorX_1 * 9.81;
     msg_imu.linear_acceleration.y = message.fAccHorX_1 * 9.81;
@@ -161,10 +161,9 @@ int main(int argc, char **argv)
     msg_imu.orientation_covariance[8] = SQUARE(orientation_stddev[2]); // z
     pub_imu.publish(msg_imu);
     
-    }
-    /* Loop rate maintain*/
-    ros::spinOnce();
-    loop_rate.sleep();
   }
+    /* Loop rate maintain*/
+  ros::spinOnce();
+  loop_rate.sleep();
   return 0;
 }
