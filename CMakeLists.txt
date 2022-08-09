@@ -82,7 +82,7 @@ include_directories(
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}_core
-  include/adma_connect/adma_parse.h
+  include/adma_connect_imu/adma_parse.h
   src/adma_parse.cpp
 )
 
